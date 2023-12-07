@@ -1,0 +1,154 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Veiculo {
+    char proprietario[100];
+    char combustivel[20];
+    char modelo[50];
+    char cor[20];
+    char chassi[50];
+    int ano;
+    char placa[8];
+} Veiculo;
+
+typedef struct Node {
+    Veiculo data;
+    struct Node *next;
+} Node;
+
+Node* adicionarVeiculo(Node *head, Veiculo veiculo) {
+    Node *novoNo = (Node *)malloc(sizeof(Node));
+    if (novoNo == NULL) {
+        printf("Erro ao alocar memoria.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    novoNo->data = veiculo;
+    novoNo->next = head;
+
+    return novoNo;
+}
+
+void listarProprietariosDiesel2010(Node *head) {
+    printf("Proprietarios de carros do ano de 2010 ou posterior movidos a Diesel:\n");
+    while (head != NULL) {
+        if (head->data.ano >= 2010 && strcmp(head->data.combustivel, "Diesel") == 0) {
+            printf("%s\n", head->data.proprietario);
+        }
+        head = head->next;
+    }
+}
+
+void listarPlacasJ(Node* head) {
+    printf("Placas que comecam com 'J' e terminam com 0, 2, 4 ou 7, junto com seus proprietarios:\n");
+    while (head != NULL) {
+        if (head->data.placa[0] == 'J' && (head->data.placa[6] == '0' || head->data.placa[6] == '2' || head->data.placa[6] == '4' || head->data.placa[6] == '7')) {
+            printf("Placa: %s, Proprietario: %s\n", head->data.placa, head->data.proprietario);
+        }
+        head = head->next;
+    }
+}
+
+void listarModeloCorVogalSomaPar(Node* head) {
+    printf("Modelo e cor de veiculos cujas placas possuem como segunda letra uma vogal e cuja soma dos valores numericos fornece um numero par:\n");
+    while (head != NULL) {
+        if ((head->data.placa[1] == 'A' || head->data.placa[1] == 'E' || head->data.placa[1] == 'I' || head->data.placa[1] == 'O' || head->data.placa[1] == 'U') &&
+            ((head->data.placa[3] - '0') + (head->data.placa[4] - '0') + (head->data.placa[5] - '0') + (head->data.placa[6] - '0') + (head->data.placa[7] - '0')) % 2 == 0) {
+            printf("Modelo: %s, Cor: %s\n", head->data.modelo, head->data.cor);
+        }
+        head = head->next;
+    }
+}
+
+void trocarProprietarioSemZero(Node *head, char chassi[]) {
+    int chassiEncontrado = 0;
+
+    while (head != NULL) {
+        if (strstr(head->data.chassi, chassi) != NULL && strchr(head->data.placa, '0') == NULL) {
+            printf("Informe o novo proprietario para o carro com chassi %s: ", chassi);
+            scanf("%s", head->data.proprietario);
+            chassiEncontrado = 1;
+            break;
+        }
+        head = head->next;
+    }
+
+    if (!chassiEncontrado) {
+        printf("Carro com chassi %s nao encontrado ou possui digito zero na placa.\n", chassi);
+    }
+}
+
+void liberarLista(Node *head) {
+    while (head != NULL) {
+        Node *temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    Node *listaVeiculos = NULL;
+    int opcao;
+
+    do {
+        printf("\nEscolha uma opcao:\n");
+        printf("1. Listar proprietarios de carros do ano de 2010 ou posterior movidos a diesel\n");
+        printf("2. Listar placas que comecam com 'J' e terminam com 0, 2, 4 ou 7, junto com seus proprietarios\n");
+        printf("3. Listar modelo e cor de veiculos cujas placas possuem como segunda letra uma vogal e cuja soma dos valores numericos fornece um numero par\n");
+        printf("4. Trocar proprietario com base no numero do chassi para carros com placas sem digito igual a zero\n");
+        printf("5. Adicionar veiculo\n");
+        printf("0. Sair do programa\n");
+
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                listarProprietariosDiesel2010(listaVeiculos);
+                break;
+            case 2:
+                listarPlacasJ(listaVeiculos);
+                break;
+            case 3:
+                listarModeloCorVogalSomaPar(listaVeiculos);
+                break;
+            case 4: {
+                char chassiTroca[50];
+                printf("Digite o numero do chassi para trocar o proprietario: ");
+                scanf("%s", chassiTroca);
+                trocarProprietarioSemZero(listaVeiculos, chassiTroca);
+                break;
+            }
+            case 5: {
+                Veiculo novoVeiculo;
+                printf("Informe os dados do novo veiculo:\n");
+                printf("Proprietario: ");
+                scanf("%s", novoVeiculo.proprietario);
+                printf("Combustivel: ");
+                scanf("%s", novoVeiculo.combustivel);
+                printf("Modelo: ");
+                scanf("%s", novoVeiculo.modelo);
+                printf("Cor: ");
+                scanf("%s", novoVeiculo.cor);
+                printf("Chassi: ");
+                scanf("%s", novoVeiculo.chassi);
+                printf("Ano: ");
+                scanf("%d", &novoVeiculo.ano);
+                printf("Placa: ");
+                scanf("%s", novoVeiculo.placa);
+
+                listaVeiculos = adicionarVeiculo(listaVeiculos, novoVeiculo);
+                break;
+            }
+            case 0:
+                printf("Encerrando o programa.\n");
+                break;
+            default:
+                printf("Opcao invalida. Tente novamente.\n");
+        }
+    } while (opcao != 0);
+
+    liberarLista(listaVeiculos);
+
+    return 0;
+}
